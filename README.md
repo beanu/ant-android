@@ -20,3 +20,5 @@ Ant脚本，自动打包apk
     这两个文件是为了自动执行ant的python脚本，list.txt是存的变量
     例如<code>ant -f build.xml -Dappname="123"</code>
     ${appname}在build的任何地方都可以用了
+    
+Markdown语言还没学，所以写的很糟糕！
