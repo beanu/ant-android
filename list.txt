@@ -1,0 +1,12 @@
+#这里是一个注释行，第一步定义需要替换的文件的路径
+dir=/home/beanu/resource/workspace/TradeClientApk
+
+#所有需要打包的列表，格式<序号>|<打包名称>|<文件目录名>|<中文名>
+0|huaianfc|淮安房产20121201001|淮安房产
+#1|lianyungangsn|20121230001|连云港水泥
+#2|lianyungangfs|20130107001|连云港服饰客户端
+#3|womensdress|20130114004|女装
+#4|liaochengfc|20130113001|聊城房产
+#5|palmliaocheng|20130113002|掌上聊城
+#6|jiangbeiwatercity|20130113003|江北水城
+#7|yanchenghotal|20130111001|盐城酒店客户端
