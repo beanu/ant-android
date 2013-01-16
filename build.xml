@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="ant" default="release">
+<project name="ant" default="reset">
     <property file="build.properties" />
 	<!-- ANT环境变量 -->
 	<property environment="env" />
@@ -61,6 +61,7 @@
 	<target name="init">
 		<echo> Initializing all output directories and copy the resource to the dest...
 		</echo>
+		<delete dir="${outdir-gen}/com" />
 		<delete dir="${outdir-bin}" />
 		<mkdir dir="${outdir-bin}" />
 		<copy todir="${drawableh.dest}" overwrite="true">
@@ -72,7 +73,33 @@
 		<copy file="${icon72.src}" todir="${icon72.dest}" overwrite="true" />
 		<copy file="${icon96.src}" todir="${icon96.dest}" overwrite="true" />
 		<copy file="${string.src}" todir="${string.dest}" overwrite="true" />
+	
+		<!-- 修改包名，第一步修改清单文件 -->
+		<replaceregexp flags="g" encoding="UTF-8" byline="true">
+      		<regexp pattern="package(.*)${old_package_name}"/>
+         	<substitution expression="package=&quot;${new_package_name}"/>
+            <fileset dir="${basedir}" includes="AndroidManifest.xml"/>
+    	</replaceregexp>
+    	<echo>SUCCESS change package </echo>
+		<replaceregexp flags="g" encoding="UTF-8" byline="true">
+      		<regexp pattern="${old_package_name}"/>
+         	<substitution expression="${new_package_name}"/>
+            <fileset dir="${basedir}/res/layout" includes="news.xml"/>
+     	</replaceregexp>
+		<!-- 第二步修改java文件 -->
+  		<replaceregexp flags="g" encoding="UTF-8" byline="true">
+      		<regexp pattern="${old_package_name}"/>
+         	<substitution expression="${new_package_name}"/>
+            <fileset dir="${basedir}/src" includes="**/*.java"/>
+     	</replaceregexp>
+     	<echo>SUCCESS change java </echo>
+     	<!-- 修改文件夹名 -->
+     	<move todir="${basedir}${new_dir}">
+    		<fileset dir="${basedir}${old_dir}"/>
+  		</move>
+  		<echo>SUCCESS change files</echo>
 	</target>
+	
 	<!-- 根据工程中的资源文件生成R.java文件 -->
 	<target name="gen-R" depends="init">
 		<echo> Generating R.java from the resources...
@@ -194,5 +221,30 @@
 		<delete file="${out-unsigned-package-ospath}" />
 		<echo> APK is released. path:${out-signed-package-ospath}
 		</echo>
+	</target>
+	
+	<!-- 还原操作 -->
+	<target name="reset" depends="release">
+		<delete dir="${outdir-gen}/com" />
+		<delete dir="${outdir-bin}" />
+		<replaceregexp flags="g" encoding="UTF-8" byline="true">
+      		<regexp pattern="package(.*)${new_package_name}"/>
+         	<substitution expression="package=&quot;${old_package_name}"/>
+            <fileset dir="${basedir}" includes="AndroidManifest.xml"/>
+    	</replaceregexp>
+		<replaceregexp flags="g" encoding="UTF-8" byline="true">
+      		<regexp pattern="${new_package_name}"/>
+         	<substitution expression="${old_package_name}"/>
+            <fileset dir="${basedir}/res/layout" includes="news.xml"/>
+     	</replaceregexp>
+  		<replaceregexp flags="g" encoding="UTF-8" byline="true">
+      		<regexp pattern="${new_package_name}"/>
+         	<substitution expression="${old_package_name}"/>
+            <fileset dir="${basedir}/src" includes="**/*.java"/>
+     	</replaceregexp>
+     	<move todir="${basedir}${old_dir}">
+    		<fileset dir="${basedir}${new_dir}"/>
+  		</move>
+  		<echo>SUCCESS!!!!!!!!!!!!!!!!!!!!!!!!!!</echo>
 	</target>
 </project>
