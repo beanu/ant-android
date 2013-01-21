@@ -57,13 +57,27 @@
 	<!-- 已认证apk包 -->
 	<property name="out-signed-package" value="${appName}.apk" />
 	<property name="out-signed-package-ospath" value="${copypath}/${out-signed-package}" />
+	<!-- 混淆路径 -->
+	<property name="out.classes.unoptimized.dir" value="out"/>
+    <property name="out.classes.optimized.dir" value="out/optimized"/>
+	<property name="unoptimized" value="unoptimized.jar" />
+    <property name="optimized" value="optimized.jar" />
+    <property name="proguard.config" value="${basedir}/proguard.cfg"/>
+	<property name="proguard.jar" value="${basedir}/proguard.jar"/>
+    
 	<!-- 初始化工作 -->
 	<target name="init">
 		<echo> Initializing all output directories and copy the resource to the dest...
 		</echo>
 		<delete dir="${outdir-gen}/com" />
 		<delete dir="${outdir-bin}" />
+		<delete dir="${out.classes.unoptimized.dir}" />
+        <delete dir="${out.classes.optimized.dir}" />
+		
 		<mkdir dir="${outdir-bin}" />
+		<mkdir dir="${out.classes.unoptimized.dir}" />
+        <mkdir dir="${out.classes.optimized.dir}" />
+		
 		<copy todir="${drawableh.dest}" overwrite="true">
 			<fileset dir="${drawableh.src}" />
 		</copy>
@@ -139,7 +153,7 @@
 	<target name="compile" depends="aidl">
 		<echo> Compiling java source code...
 		</echo>
-		<javac bootclasspath="${android-jar}" destdir="${outdir-classes}" encoding="utf-8" srcdir="." target="1.5">
+		<javac bootclasspath="${android-jar}" destdir="${out.classes.unoptimized.dir}" encoding="utf-8" srcdir="." target="1.6">
 			<classpath>
 				<fileset dir="${external-lib}" includes="*.jar" />
 				<filelist>
@@ -148,8 +162,38 @@
 			</classpath>
 		</javac>
 	</target>
-	<!-- 将.class文件转化成.dex文件 -->
-	<target name="dex" depends="compile">
+	
+	<!-- 混淆代码 -->
+	<target name="preobfuscate" depends="compile">
+        <echo>Preparing to obfuscation...</echo>
+    	<jar destfile="${unoptimized}"
+       		basedir="${out.classes.unoptimized.dir}"
+       		includes="**/**"
+       		excludes="optimized/**"
+       		/>
+    </target>
+    
+	<!--  Obfuscation with ProGuard   -->
+    <target name="optimize" unless="nooptimize" depends="preobfuscate">
+        <echo>Proguard obfuscation...</echo>
+        <java jar="${proguard.jar}" fork="true" failonerror="true">
+            <jvmarg value="-Dmaximum.inlined.code.length=16" />
+            <arg value="@${proguard.config}" />
+            <arg value="-injars ${unoptimized}" />
+            <arg value="-outjars ${optimized}" />
+            <arg value="-libraryjars ${android-jar}" />
+            <arg value="-libraryjars ${external-lib-ospath}/1.4.2-17-g65dc6f2-dirty.jar" />
+            <arg value="-libraryjars ${external-lib-ospath}/android-support-v4.jar" />
+            <arg value="-libraryjars ${external-lib-ospath}/httpmime-4.2.2.jar" />
+        </java>
+        <unzip src="${optimized}" dest="${out.classes.optimized.dir}" />
+        <!-- Delete optimized jar (now unzipped into bin directory)  -->
+		<delete file="${optimized}"/>
+        <delete file="${unoptimized}"/>
+    </target>
+	
+	<!-- 将.jar文件转化成.dex文件 -->
+	<target name="dex" depends="optimize">
 		<echo> Converting compiled files and external libraries into a .dex file...
 		</echo>
 		<exec executable="${dx}" failonerror="true">
@@ -157,7 +201,7 @@
 			<!-- 输出文件 -->
 			<arg value="--output=${dex-ospath}" />
 			<!-- 要生成.dex文件的源classes和libraries -->
-			<arg value="${outdir-classes-ospath}" />
+			<arg value="${out.classes.optimized.dir}" />
 			<arg value="${external-lib-ospath}" />
 		</exec>
 	</target>
@@ -227,6 +271,7 @@
 	<target name="reset" depends="release">
 		<delete dir="${outdir-gen}/com" />
 		<delete dir="${outdir-bin}" />
+		<delete dir="${out.classes.unoptimized.dir}" />
 		<replaceregexp flags="g" encoding="UTF-8" byline="true">
       		<regexp pattern="package(.*)${new_package_name}"/>
          	<substitution expression="package=&quot;${old_package_name}"/>
