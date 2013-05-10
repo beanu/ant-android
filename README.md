@@ -7,9 +7,17 @@ Ant脚本，自动打包apk
     
 1.env系统变量
 
-    <code>property environment="env"</code>
+    property environment="env"
     这里的env是你的系统环境变量，如果是linux系统，键入命令env，检查一下有没有下面这两个变量
     env.ANDROID_SDK_HOME env.JAVA_HOME前一个是android的sdk根目录，后一个是java home的根目录
+    在linux的/etc/profile中设置是
+    export JAVA_HOM=E/opt/jdk1.6.0_45
+    export JRE_HOME=/opt/jdk1.6.0_45/jre
+    export CLASSPATH=.:$JAVA_HOME/lib:$JRE_HOME/lib:$CLASSPATH
+    export PATH=$JAVA_HOME/bin:$JRE_HOME/bin:$PATH
+
+    export ANDROID_HOME=/opt/android-sdks
+    export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$PATH
 
 2.加载build.properties文件
 
