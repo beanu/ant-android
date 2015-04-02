@@ -16,8 +16,8 @@ Ant脚本，自动打包apk
     export CLASSPATH=.:$JAVA_HOME/lib:$JRE_HOME/lib:$CLASSPATH
     export PATH=$JAVA_HOME/bin:$JRE_HOME/bin:$PATH
 
-    export ANDROID_HOME=/opt/android-sdks
-    export PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$PATH
+    export ANDROID_SDK_HOME=/opt/android-sdks
+    export PATH=$ANDROID_SDK_HOME/platform-tools:$ANDROID_SDK_HOME/tools:$PATH
 
 2.加载build.properties文件
 
